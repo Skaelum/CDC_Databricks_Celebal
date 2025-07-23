@@ -34,7 +34,7 @@
    * [Configure Resources](#configure-resources)
 5. [Usage](#usage)
 6. [Repository Structure](#repository-structure)
-7. [Project Documentation])(#project-documentation)
+7. [Project Documentation](#project-documentation)
 
 
 ---
