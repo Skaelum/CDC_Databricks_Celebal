@@ -1,0 +1,123 @@
+{
+    "name": "cpf_databricks_pipeline",
+    "properties": {
+        "activities": [
+            {
+                "name": "ForEach1",
+                "type": "ForEach",
+                "dependsOn": [],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@pipeline().parameters.tableList",
+                        "type": "Expression"
+                    },
+                    "isSequential": true,
+                    "activities": [
+                        {
+                            "name": "Run_CDC_Notebook",
+                            "type": "DatabricksNotebook",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "notebookPath": "/Users/221106053@rcpit.ac.in/cdc_etl_pipeline.ipynb",
+                                "baseParameters": {
+                                    "table_name": {
+                                        "value": "@item().table_name\n",
+                                        "type": "Expression"
+                                    },
+                                    "landing_path": {
+                                        "value": "@item().landing_path\n",
+                                        "type": "Expression"
+                                    },
+                                    "target_path": {
+                                        "value": "@item().target_path\n\n",
+                                        "type": "Expression"
+                                    }
+                                }
+                            },
+                            "linkedServiceName": {
+                                "referenceName": "LS_Databricks",
+                                "type": "LinkedServiceReference"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "SendEmail",
+                "type": "WebActivity",
+                "dependsOn": [
+                    {
+                        "activity": "ForEach1",
+                        "dependencyConditions": [
+                            "Completed"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "method": "POST",
+                    "headers": {
+                        "Content-Type": {
+                            "value": "application/json",
+                            "type": "Expression"
+                        }
+                    },
+                    "url": {
+                        "value": "https://prod-46.centralasia.logic.azure.com:443/workflows/9e4a67b887e1488ab29fa4c5d6e7f89c/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=uctPcOUigQ3kshGUAoEdiWO8sW3ek3EhIZbQKrzXj_8",
+                        "type": "Expression"
+                    },
+                    "body": {
+                        "value": "{\n  \"table_name\": \"Customer\",\n  \"records_inserted\": 5,\n  \"records_updated\": 2\n}\n",
+                        "type": "Expression"
+                    }
+                }
+            }
+        ],
+        "parameters": {
+            "table_name": {
+                "type": "string",
+                "defaultValue": "pipeline().parameters.table_name"
+            },
+            "landing_path": {
+                "type": "string",
+                "defaultValue": "@pipeline().parameters.landing_path"
+            },
+            "target_path": {
+                "type": "string",
+                "defaultValue": "@pipeline().parameters.target_path"
+            },
+            "tableList": {
+                "type": "array",
+                "defaultValue": [
+                    {
+                        "table_name": "merged_customer",
+                        "landing_path": "/mnt/raw/merged_customer/",
+                        "target_path": "/mnt/bronze/merged_customer/"
+                    },
+                    {
+                        "table_name": "merged_orders",
+                        "landing_path": "/mnt/raw/merged_orders/",
+                        "target_path": "/mnt/bronze/merged_orders/"
+                    }
+                ]
+            }
+        },
+        "annotations": []
+    }
+}
