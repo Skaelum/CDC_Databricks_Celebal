@@ -1,0 +1,24 @@
+{
+    "name": "HourlyTrigger_CDC",
+    "properties": {
+        "annotations": [],
+        "runtimeState": "Started",
+        "pipelines": [
+            {
+                "pipelineReference": {
+                    "referenceName": "cpf_databricks_pipeline",
+                    "type": "PipelineReference"
+                }
+            }
+        ],
+        "type": "ScheduleTrigger",
+        "typeProperties": {
+            "recurrence": {
+                "frequency": "Hour",
+                "interval": 1,
+                "startTime": "2025-07-23T05:15:00",
+                "timeZone": "India Standard Time"
+            }
+        }
+    }
+}
